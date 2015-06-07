@@ -1,4 +1,4 @@
-package labeneko.com.kizasiviewer;
+package labeneko.com.kizasiviewer.api;
 
 import retrofit.RetrofitError;
 

@@ -5,8 +5,13 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import labeneko.com.kizasiviewer.api.KizasiApiService;
+import labeneko.com.kizasiviewer.api.RequestCallback;
+import labeneko.com.kizasiviewer.api.RequestListener;
+import labeneko.com.kizasiviewer.api.StringConverter;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
+import retrofit.converter.SimpleXMLConverter;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -16,14 +21,14 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setConverter(new StringConverter())
+                .setConverter(new SimpleXMLConverter())
                 .setEndpoint("http://kizasi.jp")
                 .build();
         KizasiApiService service = restAdapter.create(KizasiApiService.class);
-        service.getRss(new RequestCallback<String>(new RequestListener<String>() {
+        service.getRss(new RequestCallback<KizasiApiService.Rss>(new RequestListener<KizasiApiService.Rss>() {
             @Override
-            public void onSuccess(String response) {
-                System.out.println(response);
+            public void onSuccess(KizasiApiService.Rss response) {
+                System.out.println(response.channel.title);
             }
 
             @Override
