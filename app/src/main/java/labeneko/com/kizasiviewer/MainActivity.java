@@ -5,12 +5,32 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+
 public class MainActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setConverter(new StringConverter())
+                .setEndpoint("http://kizasi.jp")
+                .build();
+        KizasiApiService service = restAdapter.create(KizasiApiService.class);
+        service.getRss(new RequestCallback<String>(new RequestListener<String>() {
+            @Override
+            public void onSuccess(String response) {
+                System.out.println(response);
+            }
+
+            @Override
+            public void onFailure(RetrofitError error) {
+                System.out.println(error);
+            }
+        }));
     }
 
     @Override
