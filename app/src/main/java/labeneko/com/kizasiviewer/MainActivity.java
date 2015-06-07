@@ -28,7 +28,7 @@ public class MainActivity extends ActionBarActivity {
         service.getRss(new RequestCallback<KizasiApiService.Rss>(new RequestListener<KizasiApiService.Rss>() {
             @Override
             public void onSuccess(KizasiApiService.Rss response) {
-                System.out.println(response.channel.title);
+                System.out.println(response.channel.articles.get(0).title);
             }
 
             @Override
