@@ -1,9 +1,13 @@
 package labeneko.com.kizasiviewer;
 
+import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import labeneko.com.kizasiviewer.api.KizasiApiService;
 import labeneko.com.kizasiviewer.api.RequestCallback;
@@ -15,28 +19,43 @@ import retrofit.converter.SimpleXMLConverter;
 
 public class MainActivity extends ActionBarActivity {
 
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    KizasiApiService service;
+    KizasiArticleAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // SwipeRefreshLayoutの設定
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
+        mSwipeRefreshLayout.setOnRefreshListener(mOnRefreshListener);
+        mSwipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_dark);
+        adapter = new KizasiArticleAdapter(this);
+
+        // ListViewにデータをセットする
+        ListView listView = (ListView) findViewById(R.id.list);
+        listView.setAdapter(adapter);
+
+
+
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setConverter(new SimpleXMLConverter())
                 .setEndpoint("http://kizasi.jp")
                 .build();
-        KizasiApiService service = restAdapter.create(KizasiApiService.class);
-        service.getRss(new RequestCallback<KizasiApiService.Rss>(new RequestListener<KizasiApiService.Rss>() {
-            @Override
-            public void onSuccess(KizasiApiService.Rss response) {
-                System.out.println(response.channel.articles.get(0).title);
-            }
+        service = restAdapter.create(KizasiApiService.class);
 
-            @Override
-            public void onFailure(RetrofitError error) {
-                System.out.println(error);
-            }
-        }));
+        refresh();
     }
+
+    private SwipeRefreshLayout.OnRefreshListener mOnRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
+        @Override
+        public void onRefresh() {
+            mSwipeRefreshLayout.setRefreshing(true);
+            refresh();
+        }
+    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -58,5 +77,20 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void refresh(){
+        adapter.clear();
+        service.getRss(new RequestCallback<KizasiApiService.Rss>(new RequestListener<KizasiApiService.Rss>() {
+            @Override
+            public void onSuccess(KizasiApiService.Rss response) {
+                adapter.addAll(response.channel.articles);
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+
+            @Override
+            public void onFailure(RetrofitError error) {
+            }
+        }));
     }
 }
